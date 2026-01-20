@@ -679,7 +679,7 @@ function App() {
           const currentMonth = now.getMonth();
           const currentYear = now.getFullYear();
 
-          // Filter attendance data for current month
+          // Filter attendance data for current month (exclude current day)
           const monthlyAttendance = attendanceData.filter((entry) => {
             if (!entry.attendanceDate) return false;
             const entryDate = new Date(entry.attendanceDate);
@@ -687,7 +687,7 @@ function App() {
             return (
               entryDate.getMonth() === currentMonth &&
               entryDate.getFullYear() === currentYear &&
-              entryDate <= today
+              entryDate < today
             );
           });
 
