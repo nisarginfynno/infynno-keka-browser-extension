@@ -337,7 +337,7 @@ function App() {
             return (
               entryDate.getMonth() === currentMonth &&
               entryDate.getFullYear() === currentYear &&
-              entryDate <= today
+              entryDate < today
             );
           });
 
@@ -476,10 +476,10 @@ function App() {
                 </div>
                 <div
                   className={`metric-card ${metrics.isCompleted
-                      ? "completed"
-                      : metrics.isCloseToCompletion
-                        ? "warning"
-                        : ""
+                    ? "completed"
+                    : metrics.isCloseToCompletion
+                      ? "warning"
+                      : ""
                     }`}
                 >
                   <div className="metric-label">Remaining</div>
@@ -487,10 +487,10 @@ function App() {
                 </div>
                 <div
                   className={`metric-card ${metrics.isCompleted
-                      ? "completed"
-                      : metrics.isCloseToCompletion
-                        ? "warning"
-                        : ""
+                    ? "completed"
+                    : metrics.isCloseToCompletion
+                      ? "warning"
+                      : ""
                     }`}
                 >
                   <div className="metric-label">Est. Completion</div>
