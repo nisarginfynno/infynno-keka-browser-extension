@@ -33,13 +33,15 @@ export interface LeaveTimeInfo {
 
 export interface NotificationStates {
   completionNotifiedToday: boolean;
-  closeToCompletionNotifiedToday: boolean;
   overtimeNotifiedToday: boolean;
+  lastOvertimeNotifiedMinutes: number;
   clockedInTooLongNotifiedToday: boolean;
-  breakReminderNotifiedToday: boolean;
   monthlyProgressNotifiedThisWeek: boolean;
   leaveTimeApproachingNotifiedToday: boolean;
   weeklySummaryNotified: boolean;
+  lunchBreakNotifiedToday: boolean;
+  teaBreakNotifiedToday: boolean;
+  averageTargetNotifiedToday: boolean;
 }
 
 export interface NotificationServiceProps {
@@ -57,4 +59,23 @@ export interface NotificationServiceProps {
   averageHours: number | null;
   notificationStates: NotificationStates;
   setNotificationStates: React.Dispatch<React.SetStateAction<NotificationStates>>;
+}
+
+export interface TimeEntry {
+  actualTimestamp: string;
+  timestamp: string;
+  punchStatus: number;
+}
+
+export interface TimePair {
+  startTime: string;
+  endTime: string;
+  duration: string;
+  durationMinutes: number;
+}
+
+export interface Break {
+  startTime: string;
+  endTime: string;
+  duration: string;
 }

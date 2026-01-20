@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useMemo, useRef } from "react";
-import type { Metrics, NotificationStates, NotificationServiceProps } from "../types";
+import type { Metrics, NotificationStates, NotificationServiceProps } from "../../../utils/types";
+import { browser } from "wxt/browser";
 
 export function NotificationService({
   accessToken,
@@ -33,6 +34,10 @@ export function NotificationService({
   // Optimized notification helper functions
   const showNotification = useCallback(async (title: string, message: string, requireInteraction = false) => {
     try {
+      if (!browser || !browser.notifications) {
+        console.error("Notifications API not available");
+        return;
+      }
       await browser.notifications.create({
         type: "basic",
         iconUrl: "icon/128.png",
@@ -46,7 +51,7 @@ export function NotificationService({
     }
   }, []);
 
-  const saveNotificationState = useCallback(async (key: string, value: boolean) => {
+  const saveNotificationState = useCallback(async (key: string, value: boolean | number) => {
     try {
       await browser.storage.local.set({ [key]: value });
     } catch (error) {
@@ -56,7 +61,7 @@ export function NotificationService({
 
   // Batch state updates to prevent multiple re-renders
   const updateNotificationStates = useCallback((updates: Partial<NotificationStates>) => {
-    setNotificationStates(prev => ({ ...prev, ...updates }));
+    setNotificationStates((prev: NotificationStates) => ({ ...prev, ...updates }));
   }, [setNotificationStates]);
 
   // Load notification states once on mount
@@ -65,26 +70,29 @@ export function NotificationService({
       try {
         const keys = [
           `completion_notified_${currentDay}`,
-          `close_completion_notified_${currentDay}`,
           `overtime_notified_${currentDay}`,
           `clocked_in_too_long_notified_${currentDay}`,
-          `break_reminder_notified_${currentDay}`,
           `leave_time_approaching_notified_${currentDay}`,
           `monthly_progress_notified_${currentWeek}`,
-          `weekly_summary_notified_${currentWeek}`
+          `weekly_summary_notified_${currentWeek}`,
+          `lunch_break_notified_${currentDay}`,
+          `tea_break_notified_${currentDay}`,
+          `average_target_notified_${currentDay}`
         ];
 
         const result = await browser.storage.local.get(keys);
 
         setNotificationStates({
           completionNotifiedToday: Boolean(result[keys[0]]),
-          closeToCompletionNotifiedToday: Boolean(result[keys[1]]),
-          overtimeNotifiedToday: Boolean(result[keys[2]]),
-          clockedInTooLongNotifiedToday: Boolean(result[keys[3]]),
-          breakReminderNotifiedToday: Boolean(result[keys[4]]),
-          leaveTimeApproachingNotifiedToday: Boolean(result[keys[5]]),
-          monthlyProgressNotifiedThisWeek: Boolean(result[keys[6]]),
-          weeklySummaryNotified: Boolean(result[keys[7]]),
+          overtimeNotifiedToday: Boolean(result[keys[1]]),
+          clockedInTooLongNotifiedToday: Boolean(result[keys[2]]),
+          leaveTimeApproachingNotifiedToday: Boolean(result[keys[3]]),
+          monthlyProgressNotifiedThisWeek: Boolean(result[keys[4]]),
+          weeklySummaryNotified: Boolean(result[keys[5]]),
+          lastOvertimeNotifiedMinutes: 0, // Default to 0 as we don't persist check exactly same way here or need separate load for number
+          lunchBreakNotifiedToday: Boolean(result[keys[6]]),
+          teaBreakNotifiedToday: Boolean(result[keys[7]]),
+          averageTargetNotifiedToday: Boolean(result[keys[8]]),
         });
       } catch (err) {
         console.error("Error loading notification states:", err);
@@ -124,7 +132,10 @@ export function NotificationService({
         return;
       }
 
-      const notificationsToShow: Array<{ title: string; message: string; stateKey: keyof NotificationStates; storageKey: string }> = [];
+      const notificationsToShow: Array<{ title: string; message: string; stateKey: Exclude<keyof NotificationStates, "lastOvertimeNotifiedMinutes">; storageKey: string }> = [];
+      const nowLocal = new Date();
+      const currentHour = nowLocal.getHours();
+      const currentMinute = nowLocal.getMinutes();
 
       // 1. Completion Notification
       if (metrics && !notificationStates.completionNotifiedToday) {
@@ -142,18 +153,28 @@ export function NotificationService({
         }
       }
 
-      // 2. Close to Completion Notification (only if not completed and clocked in)
-      if (metrics && !notificationStates.closeToCompletionNotifiedToday && !metrics.isCompleted && isClockedIn) {
-        const remainingMinutes = targetMinutes - totalWorkedMinutes;
-        const isCloseToCompletion = remainingMinutes <= 30 && remainingMinutes > 0;
-        if (isCloseToCompletion) {
-          const targetText = isHalfDay ? "4h 30m" : "8h 15m";
-          notificationsToShow.push({
-            title: "Almost There! ⏰",
-            message: `Only ${remainingMinutes} minutes left to reach your ${targetText} target. Keep going! 💪`,
-            stateKey: "closeToCompletionNotifiedToday",
-            storageKey: `close_completion_notified_${currentDay}`
-          });
+      // 2. Average Target Met (Happy Sense)
+      if (metrics && !notificationStates.averageTargetNotifiedToday) {
+        if (averageHours !== null && totalWorkingDays && remainingWorkingDays) {
+          if (totalWorkingDays > 0 && currentWorkingDay !== null && remainingWorkingDays && remainingWorkingDays > 0 && averageHours !== null) {
+            const TARGET_AVERAGE_HOURS = 8.25;
+            const totalHoursNeeded = totalWorkingDays * TARGET_AVERAGE_HOURS;
+            const hoursWorkedSoFar = averageHours * currentWorkingDay;
+            const hoursRemaining = totalHoursNeeded - hoursWorkedSoFar;
+            const hoursNeededPerDay = hoursRemaining / remainingWorkingDays;
+
+            if (hoursNeededPerDay < 8.25) {
+              const neededMinutes = Math.ceil(hoursNeededPerDay * 60);
+              if (totalWorkedMinutes >= neededMinutes) {
+                notificationsToShow.push({
+                  title: "Daily Average Met! 🌟",
+                  message: "You can leave now yeahh!!! No worries, your monthly 8h 15m average will still be completed! 🥳",
+                  stateKey: "averageTargetNotifiedToday",
+                  storageKey: `average_target_notified_${currentDay}`
+                });
+              }
+            }
+          }
         }
       }
 
@@ -193,22 +214,31 @@ export function NotificationService({
         }
       }
 
-      // 5. Break Reminder Notification
-      if (!notificationStates.breakReminderNotifiedToday && isClockedIn) {
-        const twoHours = 2 * 60;
-        const shouldRemind = totalWorkedMinutes > 0 && totalWorkedMinutes % twoHours === 0;
-        if (shouldRemind) {
-          const hoursWorked = Math.floor(totalWorkedMinutes / 60);
+      // 5. Lunch Break (12:30 PM)
+      if (!notificationStates.lunchBreakNotifiedToday && isClockedIn) {
+        if (currentHour === 12 && currentMinute >= 30) {
           notificationsToShow.push({
-            title: "Break Time! ☕",
-            message: `You've worked ${hoursWorked} hours continuously. Take a 15-20 minute break to recharge!`,
-            stateKey: "breakReminderNotifiedToday",
-            storageKey: `break_reminder_notified_${currentDay}`
+            title: "Lunch Break! 🥗",
+            message: "It's 12:30 PM. Time to grab some lunch and recharge! 🍱",
+            stateKey: "lunchBreakNotifiedToday",
+            storageKey: `lunch_break_notified_${currentDay}`
           });
         }
       }
 
-      // 6. Leave Time Approaching Notification
+      // 6. Tea Break (4:00 PM)
+      if (!notificationStates.teaBreakNotifiedToday && isClockedIn) {
+        if (currentHour >= 16) {
+          notificationsToShow.push({
+            title: "Tea Break! ☕",
+            message: "It's 4:00 PM. Take a short break for tea/coffee! 🫖",
+            stateKey: "teaBreakNotifiedToday",
+            storageKey: `tea_break_notified_${currentDay}`
+          });
+        }
+      }
+
+      // 7. Leave Time Approaching Notification
       if (leaveTimeInfo && !notificationStates.leaveTimeApproachingNotifiedToday && isClockedIn) {
         try {
           const now = new Date();
@@ -216,6 +246,9 @@ export function NotificationService({
           let leaveHour = parseInt(timeParts[0]);
           if (leaveTimeInfo.normalLeaveTime.toLowerCase().includes('pm') && leaveHour !== 12) {
             leaveHour += 12;
+          }
+          if (leaveTimeInfo.normalLeaveTime.toLowerCase().includes('am') && leaveHour === 12) {
+            leaveHour = 0;
           }
 
           const leaveTime = new Date();
@@ -232,24 +265,6 @@ export function NotificationService({
           }
         } catch (error) {
           console.error("Error calculating leave time:", error);
-        }
-      }
-
-      // 7. Monthly Progress Notification (only on Wednesdays)
-      if (!notificationStates.monthlyProgressNotifiedThisWeek && accessToken && totalWorkingDays && currentWorkingDay) {
-        const dayOfWeek = new Date().getDay();
-        if (dayOfWeek === 3) { // Wednesday
-          const progressPercent = (currentWorkingDay / totalWorkingDays) * 100;
-          const avgHoursText = averageHours && averageHours > 0
-            ? `${Math.floor(averageHours)}h ${Math.round((averageHours % 1) * 60)}m`
-            : "calculating...";
-
-          notificationsToShow.push({
-            title: "Mid-Week Progress Check 📊",
-            message: `You've completed ${currentWorkingDay}/${totalWorkingDays} working days this month (${Math.round(progressPercent)}%). Average: ${avgHoursText}`,
-            stateKey: "monthlyProgressNotifiedThisWeek",
-            storageKey: `monthly_progress_notified_${currentWeek}`
-          });
         }
       }
 
@@ -310,6 +325,7 @@ export function NotificationService({
     accessToken,
     totalWorkingDays,
     currentWorkingDay,
+    remainingWorkingDays,
     averageHours,
     notificationStates,
     targetMinutes,
