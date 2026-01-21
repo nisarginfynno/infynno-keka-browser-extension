@@ -384,7 +384,7 @@ export const processMonthlyStats = (
             return (
                 entryDate.getMonth() === currentMonth &&
                 entryDate.getFullYear() === currentYear &&
-                entryDate <= today
+                entryDate < today
             );
         });
 
