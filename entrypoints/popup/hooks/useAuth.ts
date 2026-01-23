@@ -22,13 +22,18 @@ export const useAuth = (): UseAuthResult => {
                     setLoading(false);
                 }
 
-                // But ALWAYS try to get a fresh one from the tab, because Keka tokens expire daily
+                const { keka_domain } = await browser.storage.local.get("keka_domain");
+                const domain = (keka_domain as string) || "infynno.keka.com";
+                const hostname = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
                 const kekaTabs = await browser.tabs.query({
                     url: [
-                        "*://infynno.keka.com/*",
-                        "*://*.infynno.keka.com/*"
+                        `*://${hostname}/*`,
+                        `*://*.${hostname}/*`
                     ]
                 });
+
+                let currentAccessToken = storedToken.access_token;
 
                 if (kekaTabs.length > 0) {
                     const activeTab = kekaTabs.find((tab) => tab.active) || kekaTabs[0];
@@ -43,15 +48,15 @@ export const useAuth = (): UseAuthResult => {
 
                             if (results && results[0]?.result) {
                                 const token = results[0].result;
-                                // If we found a token, and it's different (or we didn't have one), update it
+                                // If we found a token, update our local tracker
+                                currentAccessToken = token;
+
+                                // If it's different (or we didn't have one), update storage/state
                                 if (token !== storedToken.access_token) {
                                     setAccessToken(token);
                                     await browser.storage.local.set({ access_token: token });
                                     // Trigger immediate check now that we have a fresh token
                                     browser.runtime.sendMessage({ type: "FORCE_CHECK" }).catch(() => { });
-                                } else if (!storedToken.access_token) {
-                                    // Case where we didn't have stored, but found one and they are same? No, stored was null.
-                                    // Should be covered by above if (token !== storedToken.access_token)
                                 }
                             }
                         } catch (scriptError) {
@@ -60,17 +65,20 @@ export const useAuth = (): UseAuthResult => {
                     }
                 }
 
-                // If after all this we still don't have a token (and didn't set it from storage)
-                if (!accessToken && !storedToken.access_token && kekaTabs.length === 0) {
-                    setError("Please open infynno.keka.com in a tab and log in");
-                } else if (!accessToken && !storedToken.access_token) {
-                    // We had tabs but couldn't get token?
-                    // Or maybe we haven't set accessToken yet in this render cycle?
-                    // We can't easily check 'accessToken' state here closure-wise, so rely on 'storedToken' var
-                    // logic is a bit tricky with react state.
-                    // But we setAccessToken above.
+                // If after all this we still don't have a token
+                if (!currentAccessToken && kekaTabs.length === 0) {
+                    setError(`Please open ${domain} in a tab and log in`);
+                } else if (!currentAccessToken) {
+                    // We had tabs but couldn't get token
+                    if (kekaTabs.length === 0) {
+                        // This block was technically dead code in the original structure if strictly logical, 
+                        // but we'll keep the error setting intent just in case.
+                        // However, if we are here, kekaTabs.length > 0.
+                    }
+                    setError(`Please open Keka in a tab and log in`);
+                    setLoading(false);
+                    return;
                 }
-
             } catch (err) {
                 const errorMessage =
                     err instanceof Error ? err.message : "Failed to initialize auth";
