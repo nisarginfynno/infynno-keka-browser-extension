@@ -261,7 +261,7 @@ export const calculateLeaveTimeInfo = (totalWorkedMinutes: number, halfDay: bool
 
     let normalLeaveTimeStr: string;
     if (totalWorkedMinutes >= normalTarget) {
-        normalLeaveTimeStr = "You can leave";
+        normalLeaveTimeStr = "-";
     } else {
         const normalRemainingMinutes = Math.max(0, normalTarget - totalWorkedMinutes);
         const normalLeaveTime = new Date(now.getTime() + (normalRemainingMinutes * 60 * 1000));
@@ -272,7 +272,7 @@ export const calculateLeaveTimeInfo = (totalWorkedMinutes: number, halfDay: bool
 
     let earlyLeaveTimeStr: string;
     if (totalWorkedMinutes >= earlyTarget) {
-        earlyLeaveTimeStr = "You can leave";
+        earlyLeaveTimeStr = "-";
     } else {
         const earlyRemainingMinutes = Math.max(0, earlyTarget - totalWorkedMinutes);
         const earlyLeaveTime = new Date(now.getTime() + (earlyRemainingMinutes * 60 * 1000));

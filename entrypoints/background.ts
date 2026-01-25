@@ -174,7 +174,8 @@ async function runNotificationLogic() {
         fetchHolidays(accessToken)
       ]);
     } catch (error) {
-      console.error("Error fetching data, possibly expired token:", error);
+      // Whether specific 'Unauthorized' or generic failure, handle as potential expiration
+      // and suppress error logging to keep extension logs clean.
       await handleTokenExpiration(accessToken);
       return;
     }
@@ -186,11 +187,16 @@ async function runNotificationLogic() {
       const currentDateStr = format(now, "yyyy-MM-dd");
       leaveData = await fetchLeaveSummary(accessToken, currentDateStr);
     } catch (e) {
-      console.error("Failed to fetch leave data", e);
+      // Silently ignore leave data fetch failures
+      /*
+      if (e instanceof Error && e.message !== 'Unauthorized') {
+        console.error("Failed to fetch leave data", e);
+      }
+      */
     }
 
     if (!attendanceData) {
-      console.log('Failed to fetch attendance data - possibly expired token');
+      // console.log('Failed to fetch attendance data - possibly expired token');
       await handleTokenExpiration(accessToken);
       return;
     }
@@ -216,8 +222,8 @@ async function runNotificationLogic() {
       const justCompleted = totalWorkedMinutes >= targetMinutes;
       if (justCompleted) {
         const message = isHalfDay
-          ? "You've completed your half day target! You can leave now. 🎉"
-          : "You've completed your full day target (8h 15m)! You can leave now. 🎉";
+          ? "You've completed your half day target! 🎉"
+          : "You've completed your full day target (8h 15m)! 🎉";
         notificationsToShow.push({
           title: "Work Target Completed! 🎯",
           message,
@@ -238,7 +244,7 @@ async function runNotificationLogic() {
         if (totalWorkedMinutes >= neededMinutes) {
           notificationsToShow.push({
             title: "Daily Average Met! 🌟",
-            message: "You can leave now yeahh!!! No worries, your monthly 8h 15m average will still be completed! 🥳",
+            message: "Great job today! 🎉 You’ve already hit your daily average. Feel free to wrap up whenever you’re ready — your monthly 8h 15m average is still on track! 🥳",
             stateKey: "averageTargetNotifiedToday",
             newValue: true
           });
