@@ -1,3 +1,5 @@
+import pluralize from "pluralize";
+
 interface WeeklyOverviewProps {
   loading: boolean;
   weeklyTarget: number;
@@ -47,7 +49,11 @@ export default function WeeklyOverview({
             <div className="monthly-value">{formatHours(weeklyTarget)}</div>
           </div>
           <div
-            className={`monthly-card ${totalWorked >= weeklyTarget ? "monthly-card-green" : "monthly-card-yellow"}`}
+            className={`monthly-card ${
+              totalWorked >= weeklyTarget
+                ? "monthly-card-green"
+                : "monthly-card-yellow"
+            }`}
           >
             <div className="monthly-label">Total Worked</div>
             <div className="monthly-value">{formatHours(totalWorked)}</div>
@@ -92,8 +98,7 @@ export default function WeeklyOverview({
         {remainingWorkingDays !== null && remainingWorkingDays > 0 && (
           <div className="holidays-info">
             <div className="holidays-label">
-              {remainingWorkingDays} day{remainingWorkingDays !== 1 ? "s" : ""}{" "}
-              remaining this week
+              {pluralize("day", remainingWorkingDays, true)} remaining this week
             </div>
           </div>
         )}
@@ -101,15 +106,14 @@ export default function WeeklyOverview({
         {holidaysCount > 0 && (
           <div className="holidays-info">
             <div className="holidays-label">
-              {holidaysCount} Holiday{holidaysCount !== 1 ? "s" : ""} this week
+              {pluralize("Holiday", holidaysCount, true)} this week
             </div>
           </div>
         )}
         {leaveDaysCount > 0 && (
           <div className="holidays-info">
             <div className="holidays-label">
-              {leaveDaysCount} Leave day{leaveDaysCount !== 1 ? "s" : ""} this
-              week
+              {pluralize("Leave day", leaveDaysCount, true)} this week
             </div>
           </div>
         )}
