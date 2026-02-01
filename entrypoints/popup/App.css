@@ -641,3 +641,202 @@ body {
 }
 
 /* Re-style toggle for settings context if needed, but existing .toggle-switch works */
+
+/* Setup View */
+.setup-view {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.setup-logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.setup-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.setup-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 32px;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.setup-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 24px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.setup-input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.setup-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.setup-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.setup-input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 90px; /* Space for suffix */
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  color: #0f172a;
+  background: #ffffff;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.setup-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.setup-input-suffix {
+  position: absolute;
+  right: 16px;
+  font-size: 13px;
+  color: #94a3b8;
+  pointer-events: none;
+  font-weight: 500;
+}
+
+.setup-button {
+  width: 100%;
+  padding: 12px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.setup-button:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.setup-button:active {
+  transform: translateY(1px);
+}
+
+.setup-button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.setup-footer {
+  margin-top: 24px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Auth Error State */
+.auth-error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}
+
+.auth-error-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.auth-error-message {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.auth-error-subtext {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* Setup Checkbox */
+.setup-checkbox-wrapper {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  padding: 0 4px;
+}
+
+.setup-checkbox {
+  margin-top: 2px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  accent-color: #0f172a;
+}
+
+.setup-checkbox-label {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.setup-checkbox-description {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1.4;
+}

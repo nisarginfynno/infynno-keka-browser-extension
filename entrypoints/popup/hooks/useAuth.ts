@@ -23,7 +23,13 @@ export const useAuth = (): UseAuthResult => {
                 }
 
                 const { keka_domain } = await browser.storage.local.get("keka_domain");
-                const domain = (keka_domain as string) || "infynno.keka.com";
+
+                if (!keka_domain) {
+                    setLoading(false);
+                    return;
+                }
+
+                const domain = keka_domain as string;
                 const hostname = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
                 const kekaTabs = await browser.tabs.query({
@@ -93,12 +99,19 @@ export const useAuth = (): UseAuthResult => {
 
         // Listen for token updates from background script
         const handleStorageChange = (changes: Record<string, any>, areaName: string) => {
-            if (areaName === "local" && changes.access_token) {
-                const newToken = changes.access_token.newValue;
-                setAccessToken(newToken || null);
+            if (areaName === "local") {
+                if (changes.access_token) {
+                    const newToken = changes.access_token.newValue;
+                    setAccessToken(newToken || null);
 
-                // If token was removed/cleared, re-run auth check to show error or finding logical
-                if (!newToken) {
+                    // If token was removed/cleared, re-run auth check to show error or finding logical
+                    if (!newToken) {
+                        initializeAuth();
+                    }
+                }
+
+                // Also re-initialize if domain changes (e.g. from setup)
+                if (changes.keka_domain) {
                     initializeAuth();
                 }
             }

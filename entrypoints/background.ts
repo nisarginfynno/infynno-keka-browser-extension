@@ -113,7 +113,10 @@ async function handleTokenExpiration(accessToken: string) {
   try {
     // 1. Try to find a fresh token in opened tabs
     const { keka_domain } = await browser.storage.local.get("keka_domain");
-    const domain = (keka_domain as string) || "infynno.keka.com";
+
+    if (!keka_domain) return;
+
+    const domain = keka_domain as string;
     const hostname = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
     const kekaTabs = await browser.tabs.query({
