@@ -48,6 +48,7 @@ export interface NotificationStates {
   lunchBreakNotifiedToday: boolean;
   teaBreakNotifiedToday: boolean;
   averageTargetNotifiedToday: boolean;
+  tokenExpiredNotifiedToday: boolean;
 }
 
 export interface NotificationServiceProps {
@@ -64,7 +65,9 @@ export interface NotificationServiceProps {
   remainingWorkingDays: number | null;
   averageHours: number | null;
   notificationStates: NotificationStates;
-  setNotificationStates: React.Dispatch<React.SetStateAction<NotificationStates>>;
+  setNotificationStates: React.Dispatch<
+    React.SetStateAction<NotificationStates>
+  >;
 }
 
 export interface TimePair {
@@ -110,4 +113,17 @@ export interface MonthlyStats {
   remainingWorkingDaysCount: number;
   averageHours: number | null;
   hoursNeededPerDay: number | null;
+}
+
+export interface WeeklyStats {
+  holidays: string[];
+  leaveDaysCount: number;
+  totalWorkingDays: number | null;
+  currentWorkingDay: number | null;
+  remainingWorkingDays: number | null;
+  averageHours: number | null;
+  hoursNeededPerDay: number | null;
+  weeklyTarget: number;
+  totalWorked: number;
+  remaining: number;
 }
