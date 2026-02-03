@@ -10,6 +10,11 @@
 - **Auto-Auth**: Automatically detects your Keka session from open tabs.
 - **Flexible Tracking**: Supports Half-Day toggles and custom subdomain setup.
 
+## 🔒 Privacy & Security
+
+Your data stays on your device. We **do not** store your Keka access token, attendance logs, or personal details on any external servers. The extension only communicates directly with Keka's official servers to fetch your data.
+[Read our full Privacy Policy](PRIVACY.md).
+
 ## 🛠️ Tech Stack
 
 - [WXT](https://wxt.dev/) - Modern Web Extension Framework
