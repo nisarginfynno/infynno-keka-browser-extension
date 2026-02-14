@@ -1,0 +1,52 @@
+:root {
+  /* Colors */
+  --bg-primary: #fafafa;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f9fafb;
+
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+
+  --border-color: #e5e7eb;
+  --border-focus: #3b82f6;
+
+  /* Semantic Colors */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+
+  --color-success: #10b981;
+  --bg-success-light: #d1fae5;
+  --border-success: #6ee7b7;
+  --text-success-dark: #065f46;
+
+  --color-warning: #f59e0b;
+  --color-warning-dark: #d4af37; /* Used for text on yellow bg */
+  --bg-warning-light: #fef9e7;
+  --border-warning: #f4d03f;
+  --text-warning-dark: #7d6608;
+
+  --color-error: #f87171;
+  --bg-error-light: #fee2e2;
+  --border-error: #fca5a5;
+
+  /* Fonts */
+  --font-sans:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Defaults */
+  --font-family-base: var(--font-sans);
+}
+
+body.font-mono {
+  --font-family-base: var(--font-mono);
+}
+
+/* Dark Mode (Preliminary Support) */
+@media (prefers-color-scheme: dark) {
+  /* :root {
+     ... define dark mode variables here later ...
+  } */
+}

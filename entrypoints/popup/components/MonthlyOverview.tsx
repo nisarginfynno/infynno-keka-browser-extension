@@ -1,31 +1,30 @@
+import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import { format, subMonths, startOfMonth } from "date-fns";
 import pluralize from "pluralize";
 
 interface MonthlyOverviewProps {
-  loading: boolean;
-  totalWorkingDays: number | null;
-  currentWorkingDay: number | null;
-  remainingWorkingDays: number | null;
-  averageHours: number | null;
-  hoursNeededPerDay: number | null;
-  holidaysCount: number;
-  leaveDaysCount: number;
+  accessToken: string | null;
   selectedMonth: Date;
   onMonthChange: (date: Date) => void;
 }
 
 export default function MonthlyOverview({
-  loading,
-  totalWorkingDays,
-  currentWorkingDay,
-  remainingWorkingDays,
-  averageHours,
-  hoursNeededPerDay,
-  holidaysCount,
-  leaveDaysCount,
+  accessToken,
   selectedMonth,
   onMonthChange,
 }: MonthlyOverviewProps) {
+  const {
+    loading,
+    totalWorkingDays,
+    currentWorkingDay,
+    remainingWorkingDays,
+    averageHours,
+    hoursNeededPerDay,
+    holidays,
+    leaveDaysCount,
+  } = useMonthlyStats(accessToken, selectedMonth);
+
+  const holidaysCount = holidays.length;
   const months = Array.from({ length: 12 }, (_, i) => {
     const d = subMonths(new Date(), i);
     return startOfMonth(d);
@@ -110,7 +109,7 @@ export default function MonthlyOverview({
                   ? (() => {
                       const hours = Math.floor(hoursNeededPerDay);
                       const minutes = Math.round(
-                        (hoursNeededPerDay - hours) * 60
+                        (hoursNeededPerDay - hours) * 60,
                       );
                       return `${hours}h ${minutes}m`;
                     })()

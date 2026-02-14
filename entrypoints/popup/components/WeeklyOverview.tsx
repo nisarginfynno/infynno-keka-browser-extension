@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useWeeklyStats } from "../hooks/useWeeklyStats";
 import pluralize from "pluralize";
 import {
   format,
@@ -7,38 +9,35 @@ import {
   subWeeks,
   isSameWeek,
 } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface WeeklyOverviewProps {
-  loading: boolean;
-  weeklyTarget: number;
-  totalWorked: number;
-  remaining: number;
-  averageHours: number | null;
-  hoursNeededPerDay: number | null;
-  holidaysCount: number;
-  leaveDaysCount: number;
-  totalWorkingDays: number | null;
-  currentWorkingDay: number | null;
-  remainingWorkingDays: number | null;
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
+  accessToken: string | null;
+  isHalfDay: boolean;
 }
 
 export default function WeeklyOverview({
-  loading,
-  weeklyTarget,
-  totalWorked,
-  remaining,
-  averageHours,
-  hoursNeededPerDay,
-  holidaysCount,
-  leaveDaysCount,
-  totalWorkingDays,
-  currentWorkingDay,
-  remainingWorkingDays,
-  selectedDate,
-  onDateChange,
+  accessToken,
+  isHalfDay,
 }: WeeklyOverviewProps) {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const {
+    loading,
+    weeklyTarget,
+    totalWorked,
+    remaining,
+    averageHours,
+    hoursNeededPerDay,
+    holidays,
+    leaveDaysCount,
+    totalWorkingDays,
+    currentWorkingDay,
+    remainingWorkingDays,
+  } = useWeeklyStats(accessToken, isHalfDay, selectedDate);
+
+  const holidaysCount = holidays.length;
+  const onDateChange = setSelectedDate;
   // Format hours helper
   const formatHours = (val: number) => {
     const h = Math.floor(val);
@@ -78,6 +77,7 @@ export default function WeeklyOverview({
           }}
         >
           <button
+            className="icon-button"
             onClick={handlePrevWeek}
             style={{
               border: "none",
@@ -85,14 +85,19 @@ export default function WeeklyOverview({
               cursor: "pointer",
               padding: "4px 8px",
               color: "#6b7280",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              outline: "none",
             }}
           >
-            ←
+            <ChevronLeft />
           </button>
           <span style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
             {format(weekStart, "dd MMM")} - {format(weekEnd, "dd MMM yyyy")}
           </span>
           <button
+            className="icon-button"
             onClick={handleNextWeek}
             disabled={isCurrentWeek}
             style={{
@@ -101,9 +106,13 @@ export default function WeeklyOverview({
               cursor: isCurrentWeek ? "not-allowed" : "pointer",
               padding: "4px 8px",
               color: isCurrentWeek ? "#d1d5db" : "#6b7280",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              outline: "none",
             }}
           >
-            →
+            <ChevronRight />
           </button>
         </div>
       </div>

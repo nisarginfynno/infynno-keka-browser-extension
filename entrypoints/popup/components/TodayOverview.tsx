@@ -65,14 +65,14 @@ export default function TodayOverview({
             metrics.isCompleted
               ? "completed"
               : metrics.isCloseToCompletion
-              ? "warning"
-              : ""
+                ? "warning"
+                : ""
           }`}
         >
           <div className="metric-label">Remaining</div>
           <div className="metric-value">{metrics.remaining}</div>
         </div>
-        <div
+        {/* <div
           className={`metric-card ${
             metrics.isCompleted
               ? "completed"
@@ -83,7 +83,7 @@ export default function TodayOverview({
         >
           <div className="metric-label">Est. Completion</div>
           <div className="metric-value">{metrics.estCompletion}</div>
-        </div>
+        </div> */}
       </div>
       {leaveTimeInfo && (
         <div className="leave-info">
@@ -175,10 +175,10 @@ export default function TodayOverview({
 
                     const remainingMinutes = Math.max(
                       0,
-                      targetMinutes - totalWorkedMinutes
+                      targetMinutes - totalWorkedMinutes,
                     );
                     const leaveTime = new Date(
-                      now.getTime() + remainingMinutes * 60 * 1000
+                      now.getTime() + remainingMinutes * 60 * 1000,
                     );
                     const h = leaveTime.getHours();
                     const m = leaveTime

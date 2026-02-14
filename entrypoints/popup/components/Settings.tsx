@@ -11,6 +11,7 @@ export default function Settings({ isHalfDay, setIsHalfDay }: SettingsProps) {
   const [domain, setDomain] = useState("");
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<string>("");
+  const [fontPreference, setFontPreference] = useState<"sans" | "mono">("sans");
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -23,6 +24,13 @@ export default function Settings({ isHalfDay, setIsHalfDay }: SettingsProps) {
         setNotificationsEnabled(!!notifications_enabled);
         if (keka_domain) {
           setDomain(keka_domain as string);
+        }
+
+        const { keka_font_preference } = await browser.storage.local.get(
+          "keka_font_preference",
+        );
+        if (keka_font_preference) {
+          setFontPreference(keka_font_preference as "sans" | "mono");
         }
       } catch (error) {
         console.error("Error loading settings:", error);
@@ -53,6 +61,22 @@ export default function Settings({ isHalfDay, setIsHalfDay }: SettingsProps) {
       console.error("Error saving settings:", error);
       // Revert state on error
       setNotificationsEnabled(!notificationsEnabled);
+    }
+  };
+
+  const handleFontChange = async (font: "sans" | "mono") => {
+    try {
+      setFontPreference(font);
+      await browser.storage.local.set({ keka_font_preference: font });
+
+      // Apply immediately
+      if (font === "mono") {
+        document.body.classList.add("font-mono");
+      } else {
+        document.body.classList.remove("font-mono");
+      }
+    } catch (error) {
+      console.error("Error saving font preference:", error);
     }
   };
 
@@ -138,24 +162,67 @@ export default function Settings({ isHalfDay, setIsHalfDay }: SettingsProps) {
               Toggle it on if today is your half day.
             </div>
           </div>
-          <div className="toggle-wrapper">
-            <label className="toggle-label">
-              <input
-                type="checkbox"
-                className="toggle-switch"
-                checked={isHalfDay}
-                onChange={(e) => setIsHalfDay(e.target.checked)}
-              />
-            </label>
-          </div>
+          <label className="toggle-label">
+            <input
+              type="checkbox"
+              className="toggle-switch"
+              checked={isHalfDay}
+              onChange={(e) => setIsHalfDay(e.target.checked)}
+            />
+          </label>
         </div>
       </div>
 
-      {/* Placeholder for future settings */}
-      {/* <div className="settings-section">
-        <div className="settings-label">About</div>
-        <div className="settings-description">Keka Extension v1.0.0</div>
-      </div> */}
+      <div className="settings-row">
+        <div>
+          <div className="settings-label">Font Preference</div>
+          <div className="settings-description">
+            Choose between Sans-Serif and Monospace
+          </div>
+        </div>
+        <div className="toggle-wrapper" style={{ gap: "8px" }}>
+          <button
+            onClick={() => handleFontChange("sans")}
+            style={{
+              padding: "4px 8px",
+              borderRadius: "4px",
+              border:
+                fontPreference === "sans"
+                  ? "1px solid #3b82f6"
+                  : "1px solid #e5e7eb",
+              backgroundColor:
+                fontPreference === "sans" ? "#eff6ff" : "transparent",
+              color: fontPreference === "sans" ? "#1d4ed8" : "#6b7280",
+              fontSize: "12px",
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            Inter
+          </button>
+          <button
+            onClick={() => handleFontChange("mono")}
+            style={{
+              padding: "4px 8px",
+              borderRadius: "4px",
+              border:
+                fontPreference === "mono"
+                  ? "1px solid #3b82f6"
+                  : "1px solid #e5e7eb",
+              backgroundColor:
+                fontPreference === "mono" ? "#eff6ff" : "transparent",
+              color: fontPreference === "mono" ? "#1d4ed8" : "#6b7280",
+              fontSize: "12px",
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "var(--font-mono)",
+            }}
+          >
+            Mono
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

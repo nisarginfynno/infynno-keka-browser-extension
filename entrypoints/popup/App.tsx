@@ -9,9 +9,10 @@ import { browser } from "wxt/browser";
 import { useAuth } from "./hooks/useAuth";
 import { useCurrentMetrics } from "./hooks/useCurrentMetrics";
 import { useHalfDay } from "./hooks/useHalfDay";
-import { useMonthlyStats } from "./hooks/useMonthlyStats";
+
 import { useWeeklyStats } from "./hooks/useWeeklyStats";
 import WeeklyOverview from "./components/WeeklyOverview";
+import { Settings as SettingsIcon, X } from "lucide-react";
 
 function App() {
   const { accessToken, loading: authLoading, error: authError } = useAuth();
@@ -23,7 +24,18 @@ function App() {
 
   useEffect(() => {
     const checkSetup = async () => {
-      const { keka_domain } = await browser.storage.local.get("keka_domain");
+      const { keka_domain, keka_font_preference } =
+        await browser.storage.local.get([
+          "keka_domain",
+          "keka_font_preference",
+        ]);
+
+      if (keka_font_preference === "mono") {
+        document.body.classList.add("font-mono");
+      } else {
+        document.body.classList.remove("font-mono");
+      }
+
       if (keka_domain) {
         setActiveView("main");
       } else {
@@ -48,14 +60,12 @@ function App() {
   } = useCurrentMetrics(isHalfDay);
 
   const [activeTab, setActiveTab] = useState<"today" | "weekly" | "monthly">(
-    "today"
+    "today",
   );
 
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [selectedWeek, setSelectedWeek] = useState(new Date());
-
-  const monthlyStats = useMonthlyStats(accessToken, selectedMonth);
-  const weeklyStats = useWeeklyStats(accessToken, isHalfDay, selectedWeek);
+  const [currentDate] = useState(new Date());
+  const weeklyStats = useWeeklyStats(accessToken, isHalfDay, currentDate);
 
   // Combine loading/error states appropriately
   const appLoading = authLoading || (activeTab === "today" && metricsLoading);
@@ -92,8 +102,11 @@ function App() {
             setActiveView(activeView === "main" ? "settings" : "main")
           }
           title={activeView === "settings" ? "Back to Dashboard" : "Settings"}
+          style={{
+            outline: "none",
+          }}
         >
-          {activeView === "settings" ? "✕" : "⚙️"}
+          {activeView === "settings" ? <X /> : <SettingsIcon />}
         </button>
       </header>
 
@@ -111,9 +124,8 @@ function App() {
               <button
                 className="open-keka-button"
                 onClick={async () => {
-                  const { keka_domain } = await browser.storage.local.get(
-                    "keka_domain"
-                  );
+                  const { keka_domain } =
+                    await browser.storage.local.get("keka_domain");
                   const kekaDomain = keka_domain as string;
                   const url = kekaDomain.startsWith("http")
                     ? kekaDomain
@@ -179,32 +191,14 @@ function App() {
 
               {activeTab === "weekly" && (
                 <WeeklyOverview
-                  loading={weeklyStats.loading}
-                  weeklyTarget={weeklyStats.weeklyTarget}
-                  totalWorked={weeklyStats.totalWorked}
-                  remaining={weeklyStats.remaining}
-                  averageHours={weeklyStats.averageHours}
-                  hoursNeededPerDay={weeklyStats.hoursNeededPerDay}
-                  holidaysCount={weeklyStats.holidays.length}
-                  leaveDaysCount={weeklyStats.leaveDaysCount}
-                  totalWorkingDays={weeklyStats.totalWorkingDays}
-                  currentWorkingDay={weeklyStats.currentWorkingDay}
-                  remainingWorkingDays={weeklyStats.remainingWorkingDays}
-                  selectedDate={selectedWeek}
-                  onDateChange={setSelectedWeek}
+                  accessToken={accessToken}
+                  isHalfDay={isHalfDay}
                 />
               )}
 
               {activeTab === "monthly" && (
                 <MonthlyOverview
-                  loading={monthlyStats.loading}
-                  totalWorkingDays={monthlyStats.totalWorkingDays}
-                  currentWorkingDay={monthlyStats.currentWorkingDay}
-                  remainingWorkingDays={monthlyStats.remainingWorkingDays}
-                  averageHours={monthlyStats.averageHours}
-                  hoursNeededPerDay={monthlyStats.hoursNeededPerDay}
-                  holidaysCount={monthlyStats.holidays.length}
-                  leaveDaysCount={monthlyStats.leaveDaysCount}
+                  accessToken={accessToken}
                   selectedMonth={selectedMonth}
                   onMonthChange={setSelectedMonth}
                 />
